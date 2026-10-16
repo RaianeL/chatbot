@@ -110,21 +110,100 @@ with tab1:
   if "messages" not in st.session_state:
     st.session_state.messages = []
 
+  # Variável para capturar prompt (seja via botão ou via caixa de texto)
+  user_query = None
+
   if document_text.strip() and len(st.session_state.messages) == 0:
     st.markdown("#### ⚡ Sugestões Rápidas de Interação:")
     col_a, col_b, col_c = st.columns(3)
-    quick_prompt = None
     with col_a:
       if st.button("📄 Resumir Documento"):
-        quick_prompt = (
-            "Faça um resumo detalhado e estruturado deste documento."
-        )
+        user_query = "Faça um resumo detalhado e estruturado deste documento."
     with col_b:
       if st.button("🔍 Extrair Pontos-Chave"):
-        quick_prompt = "Quais são os principais pontos e conclusões do texto?"
+        user_query = "Quais são os principais pontos e conclusões do texto?"
     with col_c:
       if st.button("❓ Elaborar Quiz"):
-        quick_prompt = (
+        user_query = (
             "Elabore 3 perguntas de múltipla escolha com base no texto"
             " fornecido."
         )
+
+  # Exibir histórico de mensagens armazenadas
+  for message in st.session_state.messages:
+    avatar_icon = "👤" if message["role"] == "user" else "🤖"
+    with st.chat_message(message["role"], avatar=avatar_icon):
+      st.markdown(message["content"])
+
+  # Caixa de input padrão do Streamlit (sempre visível)
+  chat_input_val = st.chat_input("Digite sua dúvida ou comando...")
+
+  # Define qual foi a mensagem enviada (prioriza a caixa de texto, se preenchida, ou o botão clicado)
+  if chat_input_val:
+    user_query = chat_input_val
+
+  if user_query:
+    st.session_state.messages.append({"role": "user", "content": user_query})
+    with st.chat_message("user", avatar="👤"):
+      st.markdown(user_query)
+
+    if document_text.strip():
+      system_prompt = (
+          "Você é um assistente RAG especializado e académico. Responda à"
+          " pergunta baseando-se estritamente no documento anexado. Caso a"
+          " informação não conste no texto, informe educadamente.\n\nCONTEÚDO"
+          f" DO DOCUMENTO:\n{document_text}"
+      )
+    else:
+      system_prompt = (
+          "Você é um assistente virtual inteligente e altamente qualificado."
+      )
+
+    messages_payload = [{"role": "system", "content": system_prompt}]
+    for msg in st.session_state.messages:
+      messages_payload.append({"role": msg["role"], "content": msg["content"]})
+
+    with st.chat_message("assistant", avatar="🤖"):
+      with st.spinner("A processar informações via Microsoft Foundry..."):
+        try:
+          response = client.chat.completions.create(
+              model=DEPLOYMENT_NAME,
+              messages=messages_payload,
+              temperature=0.3,
+          )
+          assistant_response = response.choices[0].message.content
+        except Exception as e:
+          assistant_response = f"❌ Erro na comunicação com o serviço: {e}"
+
+      st.markdown(assistant_response)
+
+    st.session_state.messages.append(
+        {"role": "assistant", "content": assistant_response}
+    )
+
+with tab2:
+  st.markdown("### 📊 Painel de Demonstração e Estatísticas")
+  st.markdown(
+      "Esta aba apresenta uma visão geral do funcionamento lógico e do"
+      " ecossistema implementado."
+  )
+
+  col_1, col_2 = st.columns(2)
+
+  with col_1:
+    st.markdown(
+        """
+        <div class="demo-box">
+            <h4>🧠 O que é RAG?</h4>
+            <p>Retrieval-Augmented Generation combina a capacidade criativa dos Modelos de Linguagem com uma base de dados externa (o seu PDF/TXT).</p>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+  with col_2:
+    st.markdown(
+        """
+        <div class="demo-box">
+            <h4>⚙️ Integração Microsoft Foundry</h4>
+            <p>O sistema consome endpoints seguros do Azure AI Services através do modelo
