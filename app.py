@@ -129,11 +129,10 @@ if prompt := st.chat_input("Escreva sua mensagem aqui..."):
   if document_text.strip():
     system_prompt = (
         "Você é um assistente RAG especializado e prestativo. Responda à"
-        " pergunta do usuário baseando-se estritamente no seguinte contexto"
-        " extraído do documento enviado. Se a resposta não constar no contexto,"
-        " informe educadamente que o documento não possui essa"
-        " informação.\n\n--- CONTEXTO ---\n"
-        f"{document_text}\n----------------"
+        " pergunta do usuário baseando-se estritamente no contexto do documento"
+        " enviado. Se a resposta não constar no contexto, informe que o"
+        " documento não possui essa informação.\n\nCONTEÚDO DO"
+        f" DOCUMENTO:\n{document_text}"
     )
   else:
     system_prompt = (
@@ -145,4 +144,17 @@ if prompt := st.chat_input("Escreva sua mensagem aqui..."):
     messages_payload.append({"role": msg["role"], "content": msg["content"]})
 
   with st.chat_message("assistant", avatar="🤖"):
-    with st.spinner("Analisando e gerando
+    with st.spinner("Analisando e gerando resposta..."):
+      try:
+        response = client.chat.completions.create(
+            model=DEPLOYMENT_NAME, messages=messages_payload, temperature=0.3
+        )
+        assistant_response = response.choices[0].message.content
+      except Exception as e:
+        assistant_response = f"❌ Ocorreu um erro na API: {e}"
+
+    st.markdown(assistant_response)
+
+  st.session_state.messages.append(
+      {"role": "assistant", "content": assistant_response}
+  )
