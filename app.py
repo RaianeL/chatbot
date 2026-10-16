@@ -8,24 +8,19 @@ st.set_page_config(
 )
 
 # ==========================================
-# 1. INTERFACE E ESTILO (CSS CUSTOMIZADO AVANÇADO)
+# 1. INTERFACE E ESTILO (CSS CUSTOMIZADO)
 # ==========================================
 st.markdown(
     """
     <style>
-    /* Estilização geral do fundo e fontes */
     .stApp {
         background-color: #f8fafc;
     }
-    
-    /* Centralização e limite de largura da área principal */
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 5rem;
         max-width: 800px;
     }
-
-    /* Estilo do cabeçalho */
     h1 {
         color: #0f172a;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,21 +28,16 @@ st.markdown(
         text-align: center;
         margin-bottom: 0.2rem;
     }
-    
     p.subtitle {
         text-align: center;
         color: #64748b;
         font-size: 1rem;
         margin-bottom: 2rem;
     }
-
-    /* Estilização da barra lateral */
     [data-testid="stSidebar"] {
         background-color: #ffffff;
         border-right: 1px solid #e2e8f0;
     }
-    
-    /* Mensagens do chat customizadas */
     [data-testid="stChatMessage"] {
         padding: 1rem;
         border-radius: 12px;
@@ -68,7 +58,6 @@ AZURE_API_KEY = (
 AZURE_ENDPOINT = "https://marcelomaffeis-05082026-resource.services.ai.azure.com/"
 DEPLOYMENT_NAME = "gpt-4.1-mini"
 
-# Inicialização do cliente Azure OpenAI
 client = AzureOpenAI(
     api_key=AZURE_API_KEY,
     api_version="2024-02-01",
@@ -124,19 +113,36 @@ if uploaded_file is not None:
 # 4. LÓGICA DE CHAT E HISTÓRICO
 # ==========================================
 
-# Inicializa o histórico de mensagens no session_state
 if "messages" not in st.session_state:
   st.session_state.messages = []
 
-# Exibe o histórico de mensagens na interface com avatares customizados
 for message in st.session_state.messages:
   avatar = "👤" if message["role"] == "user" else "🤖"
   with st.chat_message(message["role"], avatar=avatar):
     st.markdown(message["content"])
 
-# Captura a entrada do usuário na caixa de chat inferior
 if prompt := st.chat_input("Escreva sua mensagem aqui..."):
-  # Adiciona mensagem do usuário ao histórico
   st.session_state.messages.append({"role": "user", "content": prompt})
   with st.chat_message("user", avatar="👤"):
-    st.
+    st.markdown(prompt)
+
+  if document_text.strip():
+    system_prompt = (
+        "Você é um assistente RAG especializado e prestativo. Responda à"
+        " pergunta do usuário baseando-se estritamente no seguinte contexto"
+        " extraído do documento enviado. Se a resposta não constar no contexto,"
+        " informe educadamente que o documento não possui essa"
+        " informação.\n\n--- CONTEXTO ---\n"
+        f"{document_text}\n----------------"
+    )
+  else:
+    system_prompt = (
+        "Você é um assistente virtual inteligente, amigável e profissional."
+    )
+
+  messages_payload = [{"role": "system", "content": system_prompt}]
+  for msg in st.session_state.messages:
+    messages_payload.append({"role": msg["role"], "content": msg["content"]})
+
+  with st.chat_message("assistant", avatar="🤖"):
+    with st.spinner("Analisando e gerando
