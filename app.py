@@ -46,7 +46,7 @@ st.markdown(
 st.markdown(
     """
     <div class="hero-banner">
-        <h1>🎓 Plataforma Acadêmica de ChatBot com RAG</h1>
+        <h1>🎓 Plataforma Académica de ChatBot com RAG</h1>
         <p>Desenvolvido com Python, Streamlit e Microsoft Foundry (Azure AI Services)</p>
     </div>
 """,
@@ -54,7 +54,7 @@ st.markdown(
 )
 
 # ==========================================
-# 3. BARRA LATERAL (PAINEL DE CONTROLE)
+# 3. BARRA LATERAL (PAINEL DE CONTROLO)
 # ==========================================
 with st.sidebar:
   st.image(
@@ -63,7 +63,7 @@ with st.sidebar:
       use_container_width=True,
   )
 
-  st.markdown("### 🎛️ Painel de Controle")
+  st.markdown("### 🎛️ Painel de Controlo")
   uploaded_file = st.file_uploader(
       "Envie sua Base de Conhecimento", type=["pdf", "txt"]
   )
@@ -112,4 +112,19 @@ with tab1:
 
   if document_text.strip() and len(st.session_state.messages) == 0:
     st.markdown("#### ⚡ Sugestões Rápidas de Interação:")
-    col_a, col
+    col_a, col_b, col_c = st.columns(3)
+    quick_prompt = None
+    with col_a:
+      if st.button("📄 Resumir Documento"):
+        quick_prompt = (
+            "Faça um resumo detalhado e estruturado deste documento."
+        )
+    with col_b:
+      if st.button("🔍 Extrair Pontos-Chave"):
+        quick_prompt = "Quais são os principais pontos e conclusões do texto?"
+    with col_c:
+      if st.button("❓ Elaborar Quiz"):
+        quick_prompt = (
+            "Elabore 3 perguntas de múltipla escolha com base no texto"
+            " fornecido."
+        )
