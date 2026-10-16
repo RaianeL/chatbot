@@ -110,7 +110,6 @@ with tab1:
   if "messages" not in st.session_state:
     st.session_state.messages = []
 
-  # Variável para capturar prompt (seja via botão ou via caixa de texto)
   user_query = None
 
   if document_text.strip() and len(st.session_state.messages) == 0:
@@ -135,10 +134,9 @@ with tab1:
     with st.chat_message(message["role"], avatar=avatar_icon):
       st.markdown(message["content"])
 
-  # Caixa de input padrão do Streamlit (sempre visível)
+  # Caixa de input padrão do Streamlit (sempre presente e visível)
   chat_input_val = st.chat_input("Digite sua dúvida ou comando...")
 
-  # Define qual foi a mensagem enviada (prioriza a caixa de texto, se preenchida, ou o botão clicado)
   if chat_input_val:
     user_query = chat_input_val
 
@@ -192,18 +190,28 @@ with tab2:
 
   with col_1:
     st.markdown(
-        """
-        <div class="demo-box">
-            <h4>🧠 O que é RAG?</h4>
-            <p>Retrieval-Augmented Generation combina a capacidade criativa dos Modelos de Linguagem com uma base de dados externa (o seu PDF/TXT).</p>
-        </div>
-    """,
+        '<div class="demo-box"><h4>🧠 O que é RAG?</h4><p>Retrieval-Augmented'
+        " Generation combina a capacidade criativa dos Modelos de Linguagem"
+        " com uma base de dados externa (o seu PDF/TXT).</p></div>",
         unsafe_allow_html=True,
     )
 
   with col_2:
     st.markdown(
-        """
-        <div class="demo-box">
-            <h4>⚙️ Integração Microsoft Foundry</h4>
-            <p>O sistema consome endpoints seguros do Azure AI Services através do modelo
+        '<div class="demo-box"><h4>⚙️ Integração Microsoft Foundry</h4><p>O'
+        " sistema consome endpoints seguros do Azure AI Services através do"
+        " modelo de alta eficiência <b>gpt-4.1-mini</b> com controlo restrito de"
+        " temperatura.</p></div>",
+        unsafe_allow_html=True,
+    )
+
+  if document_text.strip():
+    st.success("✅ Base de Conhecimento Ativa no momento.")
+    with st.expander("🔍 Visualizar trecho extraído do documento"):
+      st.write(
+          document_text[:1500] + "..."
+          if len(document_text) > 1500
+          else document_text
+      )
+  else:
+    st.warning("⚠️ Nenhum ficheiro foi enviado na barra lateral para análise.")
